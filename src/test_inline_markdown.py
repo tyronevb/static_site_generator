@@ -1,7 +1,7 @@
 import unittest
 
 from textnode import TextType, TextNode
-from inline_markdown import split_nodes_delimiter, extract_markdown_images, extract_markdown_links
+from inline_markdown import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_images, split_nodes_links
 
 class TestInlineMarkdown(unittest.TestCase):
     def test_split_basic(self):
@@ -94,3 +94,38 @@ class TestInlineMarkdown(unittest.TestCase):
         output = extract_markdown_links(text)
         self.assertEqual([("to boot dev", "https://www.boot.dev"), ("to youtube", "https://www.youtube.com/@bootdotdev")],
                           output)
+        
+    def test_split_nodes_images(self):
+        node = TextNode("This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)", TextType.NORMAL_TEXT)
+        output = split_nodes_images([node])
+        self.assertListEqual([
+            TextNode("This is text with a ", TextType.NORMAL_TEXT),
+            TextNode("rick roll", TextType.IMAGES, "https://i.imgur.com/aKaOqIh.gif"),
+            TextNode(" and ", TextType.NORMAL_TEXT),
+            TextNode("obi wan", TextType.IMAGES, "https://i.imgur.com/fJRm4Vk.jpeg"),
+        ], output)
+
+    def test_split_nodes_links(self):
+        node = TextNode("This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)", TextType.NORMAL_TEXT)
+        output = split_nodes_links([node])
+        self.assertListEqual([
+                            TextNode("This is text with a link ", TextType.NORMAL_TEXT),
+                            TextNode("to boot dev", TextType.LINKS, "https://www.boot.dev"),
+                            TextNode(" and ", TextType.NORMAL_TEXT),
+                            TextNode(
+                                "to youtube", TextType.LINKS, "https://www.youtube.com/@bootdotdev"
+                            ),
+                        ], output)
+        
+    def test_split_image_single(self):
+        node = TextNode(
+            "![image](https://www.example.COM/IMAGE.PNG)",
+            TextType.NORMAL_TEXT,
+        )
+        new_nodes = split_nodes_images([node])
+        self.assertListEqual(
+            [
+                TextNode("image", TextType.IMAGES, "https://www.example.COM/IMAGE.PNG"),
+            ],
+            new_nodes,
+        )
