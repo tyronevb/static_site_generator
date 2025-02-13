@@ -31,10 +31,13 @@ def extract_markdown_links(text):
 def split_nodes_images(old_nodes):
     new_nodes = []
     for old_node in old_nodes:
+        sec = [""]
         if old_node.text_type != TextType.NORMAL_TEXT:
             new_nodes.append(old_node)
             continue
         images = extract_markdown_images(old_node.text)
+        if len(images) == 0:
+            new_nodes.append(old_node)
         sections = []
         start_text = old_node.text
         for image in images:
@@ -58,13 +61,17 @@ def split_nodes_images(old_nodes):
                 new_nodes.append(TextNode(sections[i][0], TextType.IMAGES, sections[i][1]))
     return new_nodes
 
+#TODO: this method needs to handle the case where there is no link. It should just pass the TextNode through.
 def split_nodes_links(old_nodes):
     new_nodes = []
     for old_node in old_nodes:
+        sec = [""]
         if old_node.text_type != TextType.NORMAL_TEXT:
             new_nodes.append(old_node)
             continue
         links = extract_markdown_links(old_node.text)
+        if len(links) == 0:
+            new_nodes.append(old_node)
         sections = []
         start_text = old_node.text
         for link in links:
@@ -87,3 +94,12 @@ def split_nodes_links(old_nodes):
             else:
                 new_nodes.append(TextNode(sections[i][0], TextType.LINKS, sections[i][1]))
     return new_nodes
+
+def text_to_textnodes(text):
+    orig_textnodes = [TextNode(text, TextType.NORMAL_TEXT)]
+    bold = split_nodes_delimiter(orig_textnodes, "**", TextType.BOLD_TEXT)
+    ital = split_nodes_delimiter(bold, "*", TextType.ITALIC_TEXT)
+    code = split_nodes_delimiter(ital, "`", TextType.CODE_TEXT)
+    img = split_nodes_images(code)
+    links = split_nodes_links(img)
+    return links
