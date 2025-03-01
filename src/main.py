@@ -1,17 +1,16 @@
-from helpers import clear_dir, copy_from_dir_to_dir, generate_page
+from helpers import clear_dir, copy_from_dir_to_dir, generate_pages_recursive
 import os
 
 def main():
     static_src = "static/"
-    content_path = "content/index.md"
+    content_path = "content/"
     template_path = "template.html"
-    dest_path = "public/index.html"
-    dest_dir = os.path.dirname(dest_path)
+    dest_path = "public/"
 
-    clear_dir(dest_dir)
+    clear_dir(dest_path)
 
-    copy_from_dir_to_dir(src=static_src, dest=dest_dir)
+    copy_from_dir_to_dir(src=static_src, dest=dest_path)
 
-    generate_page(from_path=content_path, template_path=template_path, dest_path=dest_path)
+    generate_pages_recursive(dir_path_content=content_path, template_path=template_path, dest_dir_path=dest_path)
 
 main()
