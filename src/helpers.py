@@ -4,7 +4,8 @@ import shutil
 
 def clear_dir(dest):
     # clear the contents of the dest dir
-    shutil.rmtree(dest) # this deletes the entire directory as well
+    if os.path.isdir(dest):
+        shutil.rmtree(dest) # this deletes the entire directory as well
     os.mkdir(dest) # this creates a new dest dir
 
 def copy_from_dir_to_dir(src, dest):
@@ -36,7 +37,7 @@ def extract_title(markdown):
             return line[2:]
     raise ValueError("No valid title found")
 
-def generate_page_helper(from_path, template_path, dest_path):
+def generate_page_helper(from_path, template_path, dest_path, basepath):
 
     # print a message with the paths
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
@@ -60,6 +61,10 @@ def generate_page_helper(from_path, template_path, dest_path):
     html_template = html_template.replace("{{ Title }}", page_title)
     html_template = html_template.replace("{{ Content }}", html_string)
 
+    # replace basepaths
+    html_template = html_template.replace('href="/', f'href="{basepath}')
+    html_template = html_template.replace('src="/', f'src="{basepath}')
+
     # write the new HTML page to dest path (create dirs if they don't exist)
     if not os.path.isdir(os.path.dirname(dest_path)):
         os.makedirs(os.path.dirname(dest_path))
@@ -68,7 +73,7 @@ def generate_page_helper(from_path, template_path, dest_path):
         f.write(html_template)
         f.close()
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     # crawl every entry in the content directory
     #print(f"\nNew Call of Func:\nPTC: {dir_path_content}, dest:{dest_dir_path}")
 
@@ -88,12 +93,12 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
             # rename to html
             html_dest_path = dest_path.split(".")[0] + ".html"
 
-            generate_page_helper(path_to_content, template_path, html_dest_path)
+            generate_page_helper(path_to_content, template_path, html_dest_path, basepath)
         else:
             # found a directory this is where the recursion must happen
             #print("We have another dir")
             new_dest_dir_path = os.path.join(dest_dir_path, content)
             #print(f"dest_dir_path: {dest_dir_path} path_to_content:{path_to_content}")
             os.mkdir(new_dest_dir_path)
-            generate_pages_recursive(path_to_content, template_path, new_dest_dir_path)
+            generate_pages_recursive(path_to_content, template_path, new_dest_dir_path, basepath)
     #print("Reached end of function call")
