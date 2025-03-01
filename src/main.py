@@ -1,35 +1,17 @@
-from textnode import TextNode, TextType
+from helpers import clear_dir, copy_from_dir_to_dir, generate_page
 import os
-import shutil
 
 def main():
-    src = "static/"
-    dest = "public/"
+    static_src = "static/"
+    content_path = "content/index.md"
+    template_path = "template.html"
+    dest_path = "public/index.html"
+    dest_dir = os.path.dirname(dest_path)
 
-    copy_from_dir_to_dir(src=src, dest=dest, root_dest=True)
+    clear_dir(dest_dir)
 
-def copy_from_dir_to_dir(src, dest, root_dest=True):
-    # recursive function to handle nested directories and files
-    
-    # clear the contents of the dest dir
-    shutil.rmtree(dest) # this deletes the entire directory as well
-    os.mkdir(dest) # this creates a new dest dir
+    copy_from_dir_to_dir(src=static_src, dest=dest_dir)
 
-    # for loop to copy all files, subdirectories, nested files etc.
-    dir_contents = os.listdir(src) # returns a list containing strings representing the names of all dirs and files in the dir from which it is called
-    # find files using
-    for content in dir_contents:
-        path_to_content = os.path.join(src, content)
-        is_file = os.path.isfile(path_to_content)
-        # print(f"{path_to_content} is file? - {is_file}") # some debug
+    generate_page(from_path=content_path, template_path=template_path, dest_path=dest_path)
 
-        if is_file:
-          dest_path = os.path.join(dest, content)
-          shutil.copy(path_to_content, dest_path)
-        else:
-            # this is where the recusion must happen
-            dest_dir_path = os.path.join(dest, content)
-            os.mkdir(dest_dir_path)
-            copy_from_dir_to_dir(src=path_to_content, dest=dest_dir_path)
-    
 main()
