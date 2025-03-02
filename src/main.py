@@ -5,8 +5,11 @@ import sys
 def main():
 
     args = sys.argv
-    if args[1] != "":
-        basepath = args[1]
+    if len(args) > 1:
+        if args[1] != "":
+            basepath = args[1]
+        else:
+            basepath = "/"
     else:
         basepath = "/"
 
